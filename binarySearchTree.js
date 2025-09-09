@@ -44,11 +44,12 @@ class Node {
 }
 
 class Tree {
-  constructor(arr) {
+  constructor(arr = null) {
     this.root = this.buildTree(arr);
   }
 
   buildTree(array) {
+    if (array === null) return null;
     const usefulArr = sanitizeSAndDedupSorted(array);
     return this.buildTreeRecursive(usefulArr, 0, usefulArr.length - 1);
   }
@@ -92,7 +93,96 @@ class Tree {
     }
     return true;
   }
+
+  find(value) {
+    if (!isFiniteNumber(value)) {
+      throw new Error("Cannot find a non-finite number");
+    }
+    let currentNode = this.root;
+    let parent = null;
+    while (currentNode !== null) {
+      if (currentNode.data > value) {
+        parent = currentNode;
+        currentNode = currentNode.left;
+      } else if (currentNode.data < value) {
+        parent = currentNode;
+        currentNode = currentNode.right;
+      } else {
+        return {
+          node: currentNode,
+          parent: parent,
+        };
+      }
+    }
+    return null;
+  }
+  deleteItem(value) {
+    const nodeWithParent = this.find(value);
+    if (!nodeWithParent) return false;
+    const { node, parent } = nodeWithParent;
+
+    if (!node.right && !node.left) {
+      if (!parent) {
+        this.root = null;
+        return true;
+      }
+      if (parent.right === node) {
+        parent.right = null;
+        return true;
+      } else if (parent.left === node) {
+        parent.left = null;
+        return true;
+      }
+    } else if (!node.right && node.left) {
+      if (!parent) {
+        this.root = node.left;
+        return true;
+      }
+      if (parent.right === node) {
+        parent.right = node.left;
+      } else if (parent.left === node) {
+        parent.left = node.left;
+      }
+      return true;
+    } else if (node.right && !node.left) {
+      if (!parent) {
+        this.root = node.right;
+        return true;
+      }
+      if (parent.right === node) {
+        parent.right = node.right;
+      } else if (parent.left === node) {
+        parent.left = node.right;
+      }
+      return true;
+    } else if (node.right && node.left) {
+      let justBiggerNode = node.right;
+      let parentOfJustBiggerNode = node;
+      while (justBiggerNode.left) {
+        parentOfJustBiggerNode = justBiggerNode;
+        justBiggerNode = justBiggerNode.left;
+      }
+      node.data = justBiggerNode.data;
+      if (!justBiggerNode.left && !justBiggerNode.right) {
+        if (parentOfJustBiggerNode === node) {
+          node.right = null;
+          return true;
+        }
+        parentOfJustBiggerNode.left = null;
+        return true;
+      } else if (justBiggerNode.right && !justBiggerNode.left) {
+        if (parentOfJustBiggerNode === node) {
+          node.right = justBiggerNode.right;
+          return true;
+        }
+        parentOfJustBiggerNode.left = justBiggerNode.right;
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
-const tree = new Tree([3, 2, 2, 1, 1, 5, 6, 4, 7]);
+const tree = new Tree();
 prettyPrint(tree.root);
+console.log(tree.find(4));
