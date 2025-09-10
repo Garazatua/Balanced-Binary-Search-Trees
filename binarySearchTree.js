@@ -181,8 +181,57 @@ class Tree {
     }
     return false;
   }
+  levelOrderForEach(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is required");
+    }
+    let queue = [];
+    if (this.root) {
+      queue.push(this.root);
+    } else {
+      return;
+    }
+    while (queue.length !== 0) {
+      callback(queue[0]);
+      if (queue[0].left) queue.push(queue[0].left);
+      if (queue[0].right) queue.push(queue[0].right);
+      queue.shift();
+    }
+  }
+
+  preOrderForEach(callback, node = this.root) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is required");
+    }
+    if (!node) return;
+    callback(node);
+    this.preOrderForEach(callback, node.left);
+    this.preOrderForEach(callback, node.right);
+  }
+
+  inOrderForEach(callback, node = this.root) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is required");
+    }
+    if (!node) return;
+    this.inOrderForEach(callback, node.left);
+    callback(node);
+    this.inOrderForEach(callback, node.right);
+  }
+
+  postOrderForEach(callback, node = this.root) {
+    if (typeof callback !== "function") {
+      throw new Error("A callback function is required");
+    }
+    if (!node) return;
+    this.postOrderForEach(callback, node.left);
+    this.postOrderForEach(callback, node.right);
+    callback(node);
+  }
+
+  height(value) {}
 }
 
-const tree = new Tree();
+const tree = new Tree([3, 2, 2, 1, 1, 4, 5, 6, 7]);
 prettyPrint(tree.root);
-console.log(tree.find(4));
+tree.levelOrderForEach();
