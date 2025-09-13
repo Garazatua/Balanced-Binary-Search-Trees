@@ -229,9 +229,90 @@ class Tree {
     callback(node);
   }
 
-  height(value) {}
-}
+  height(value) {
+    let queue = [];
+    const nodeWithParent = this.find(value);
+    if (!nodeWithParent) {
+      return null;
+    }
+    const { node } = nodeWithParent;
 
-const tree = new Tree([3, 2, 2, 1, 1, 4, 5, 6, 7]);
-prettyPrint(tree.root);
-tree.levelOrderForEach();
+    queue.push(node);
+
+    let height = -1;
+    while (queue.length !== 0) {
+      const levelSize = queue.length;
+      for (let i = 0; i < levelSize; i++) {
+        if (queue[0].left) queue.push(queue[0].left);
+        if (queue[0].right) queue.push(queue[0].right);
+        queue.shift();
+      }
+      height++;
+    }
+    return height;
+  }
+
+  depth(value) {
+    if (!isFiniteNumber(value)) {
+      throw new Error("Cannot find a non-finite number");
+    }
+    let depth = 0;
+    let currentNode = this.root;
+    while (currentNode !== null) {
+      if (currentNode.data > value) {
+        currentNode = currentNode.left;
+        depth++;
+      } else if (currentNode.data < value) {
+        currentNode = currentNode.right;
+        depth++;
+      } else {
+        return depth;
+      }
+    }
+    return null;
+  }
+
+  isBalanced() {
+    if (!this.root) return true;
+    let stack1 = [];
+    let stack2 = [];
+    let heights = {};
+    stack1.push(this.root);
+
+    while (stack1.length !== 0) {
+      const current = stack1.pop();
+      stack2.push(current);
+      if (current.left) {
+        stack1.push(current.left);
+      }
+      if (current.right) {
+        stack1.push(current.right);
+      }
+    }
+
+    while (stack2.length !== 0) {
+      const current = stack2.pop();
+      const leftH = current.left ? heights[current.left.data] ?? -1 : -1;
+      const rightH = current.right ? heights[current.right.data] ?? -1 : -1;
+      if (Math.abs(leftH - rightH) > 1) return false;
+      heights[current.data] = 1 + Math.max(leftH, rightH);
+    }
+    return true;
+  }
+
+  rebalance() {
+    if (!this.isBalanced()) {
+      let values = [];
+      if (!this.root) return;
+      let queue = [];
+      queue.push(this.root);
+      while (queue.length !== 0) {
+        values.push(queue[0].data);
+        if (queue[0].left) queue.push(queue[0].left);
+        if (queue[0].right) queue.push(queue[0].right);
+        queue.shift();
+      }
+      this.root = this.buildTree(values);
+    } else return;
+  }
+}
